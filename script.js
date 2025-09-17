@@ -3,9 +3,9 @@ console.log('script.js is loading...');
 // Microsoft Graph API configuration
 const msalConfig = {
     auth: {
-        clientId: 'e503fd40-c85f-42dd-b4f8-50b741d17f98', // Replace with your Azure App Registration Client ID
-        authority: 'https://login.microsoftonline.com/c552e89b-6b33-4841-aa8d-7228626dbe17', // Replace with your tenant ID
-        redirectUri: 'http://localhost:8080'
+        clientId: 'e503fd40-c85f-42dd-b4f8-50b741d17f98', // Azure App Registration Client ID
+        authority: 'https://login.microsoftonline.com/c552e89b-6b33-4841-aa8d-7228626dbe17', // Northpoint Capital Management tenant ID
+        redirectUri: window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'https://lively-island-0775fa403.2.azurestaticapps.net'
     },
     cache: {
         cacheLocation: 'localStorage',
