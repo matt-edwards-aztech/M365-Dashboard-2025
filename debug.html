@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Controls</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+        button { margin: 5px; padding: 10px 15px; }
+        .controls-test { 
+            background: white; 
+            padding: 15px; 
+            border: 2px solid #ccc; 
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        body.kiosk-mode .controls-test { display: none !important; }
+    </style>
+</head>
+<body class="standard-mode">
+    <h1>Debug Page</h1>
+    
+    <div class="debug-section">
+        <h3>Current State:</h3>
+        <div id="currentState"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Test Controls:</h3>
+        <div class="controls-test">
+            <div>
+                <button onclick="setMode('standard')">Standard Mode</button>
+                <button onclick="setMode('kiosk')">Kiosk Mode</button>
+                <button onclick="setMode('compact')">Compact Mode</button>
+            </div>
+            <div>
+                <select id="testDropdown">
+                    <option value="standard">Standard</option>
+                    <option value="kiosk">Kiosk</option>
+                    <option value="compact">Compact</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Force Controls Visible:</h3>
+        <button onclick="forceShow()">Force Show Controls</button>
+        <button onclick="clearStorage()">Clear LocalStorage</button>
+    </div>
+
+    <script>
+        function updateState() {
+            const state = document.getElementById('currentState');
+            state.innerHTML = `
+                <p><strong>Body Classes:</strong> ${document.body.classList.toString()}</p>
+                <p><strong>LocalStorage displayMode:</strong> ${localStorage.getItem('displayMode')}</p>
+                <p><strong>Controls Visible:</strong> ${getComputedStyle(document.querySelector('.controls-test')).display !== 'none'}</p>
+            `;
+        }
+        
+        function setMode(mode) {
+            document.body.classList.remove('standard-mode', 'kiosk-mode', 'compact-mode');
+            document.body.classList.add(mode + '-mode');
+            localStorage.setItem('displayMode', mode);
+            document.getElementById('testDropdown').value = mode;
+            updateState();
+        }
+        
+        function forceShow() {
+            const controls = document.querySelector('.controls-test');
+            if (controls) {
+                controls.style.display = 'flex';
+                controls.style.visibility = 'visible';
+            }
+            updateState();
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('displayMode');
+            updateState();
+        }
+        
+        // Update state every second
+        setInterval(updateState, 1000);
+        updateState();
+        
+        // Test ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                setMode('standard');
+            }
+        });
+    </script>
+</body>
+</html>

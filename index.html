@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft 365 Service Health Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <img src="Aztech-Logo-Orange-CMYK_PNG 1.png" alt="Aztech Logo" class="company-logo">
+                <h1>Microsoft 365 Service Health Dashboard</h1>
+                <div class="last-updated">
+                    Last updated: <span id="lastUpdated">-</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="controls">
+            <div class="controls-left">
+                <button id="refreshBtn" class="refresh-btn">Refresh Now</button>
+                <button id="forceRefreshBtn" class="refresh-btn">Force Fresh Data</button>
+                <button id="fullscreenBtn" class="fullscreen-btn">Full Screen</button>
+                <button id="testModalBtn" class="fullscreen-btn">Test Modal</button>
+            </div>
+            <div class="controls-right">
+                <div class="auto-refresh">
+                    <label>
+                        <input type="checkbox" id="autoRefresh" checked>
+                        Auto-refresh every 5 minutes
+                    </label>
+                </div>
+                <div class="view-options">
+                    <label>
+                        Display Mode:
+                        <select id="displayMode" class="display-select">
+                            <option value="standard">Standard</option>
+                            <option value="kiosk">Kiosk Mode</option>
+                            <option value="compact">Compact</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading service health data...</p>
+        </div>
+
+        <div class="services-grid" id="servicesGrid">
+            <!-- Service cards will be dynamically populated here -->
+        </div>
+
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <h3>Error Loading Data</h3>
+            <p id="errorDetails"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.5.0/lib/msal-browser.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

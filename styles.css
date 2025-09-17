@@ -1,0 +1,714 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: none;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+header {
+    margin-bottom: 30px;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 15px;
+}
+
+.company-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+header h1 {
+    color: #E55722;
+    font-size: 2.5em;
+    margin: 0;
+    font-weight: 700;
+}
+
+.last-updated {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.controls-left {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.controls-right {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.refresh-btn {
+    background: #E55722;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.refresh-btn:hover {
+    background: #CC4B1F;
+}
+
+.refresh-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.fullscreen-btn {
+    background: #666;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.fullscreen-btn:hover {
+    background: #555;
+}
+
+.display-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 0.9em;
+    margin-left: 10px;
+}
+
+.auto-refresh label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.loading {
+    text-align: center;
+    padding: 50px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #E55722;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    max-width: none;
+}
+
+.service-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 6px solid transparent;
+    min-height: 180px;
+}
+
+.service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.service-card.healthy {
+    border-left-color: #107c10;
+}
+
+.service-card.degradation {
+    border-left-color: #ff8c00;
+}
+
+.service-card.issues {
+    border-left-color: #d13438;
+}
+
+.service-card.advisory {
+    border-left-color: #ff8c00;
+}
+
+.service-card.healthy-advisory {
+    border-left-color: #107c10;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+    border-top: 2px solid #ffa500;
+}
+
+.service-card.unknown {
+    border-left-color: #666;
+}
+
+.service-card.clickable {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+
+.service-card.clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+}
+
+.service-card.clickable:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.service-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.service-name {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.3;
+}
+
+.status-indicator {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.status-indicator.healthy {
+    background-color: #107c10;
+}
+
+.status-indicator.degradation {
+    background-color: #ff8c00;
+}
+
+.status-indicator.issues {
+    background-color: #d13438;
+}
+
+.status-indicator.advisory {
+    background-color: #ff8c00;
+}
+
+.status-indicator.unknown {
+    background-color: #666;
+}
+
+.service-status {
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.service-status.healthy {
+    color: #107c10;
+}
+
+.service-status.degradation {
+    color: #ff8c00;
+}
+
+.service-status.issues {
+    color: #d13438;
+}
+
+.service-status.advisory {
+    color: #ff8c00;
+}
+
+.service-status.unknown {
+    color: #666;
+}
+
+.issues-count {
+    background: #f8f8f8;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.issues-list {
+    margin-top: 10px;
+    padding-left: 15px;
+}
+
+.issues-list li {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.error-message {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.error-message h3 {
+    margin-bottom: 10px;
+}
+
+.click-hint {
+    text-align: center;
+    color: #666;
+    font-size: 0.8em;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* Display Mode Styles - More specific rules */
+.controls {
+    display: flex !important;
+}
+
+body.kiosk-mode .controls {
+    display: none !important;
+}
+
+body.standard-mode .controls {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+body.compact-mode .controls {
+    display: flex !important;
+}
+
+body.kiosk-mode header {
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+body.kiosk-mode .services-grid {
+    gap: 20px;
+}
+
+body.kiosk-mode .company-logo {
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+body.kiosk-mode .company-logo:hover {
+    opacity: 0.7;
+}
+
+body.compact-mode .service-card {
+    padding: 15px;
+    min-height: 120px;
+}
+
+body.compact-mode .service-name {
+    font-size: 1.1em;
+}
+
+body.compact-mode .service-status {
+    font-size: 0.95em;
+}
+
+body.compact-mode .status-indicator {
+    width: 20px;
+    height: 20px;
+    font-size: 0.8em;
+}
+
+body.compact-mode .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #E55722;
+}
+
+.close {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.service-status-large {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.status-indicator-large {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+.status-indicator-large.healthy { background-color: #107c10; }
+.status-indicator-large.degradation { background-color: #ff8c00; }
+.status-indicator-large.issues { background-color: #d13438; }
+.status-indicator-large.advisory { background-color: #ff8c00; }
+.status-indicator-large.unknown { background-color: #666; }
+
+.status-text-large {
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.status-text-large.healthy { color: #107c10; }
+.status-text-large.degradation { color: #ff8c00; }
+.status-text-large.issues { color: #d13438; }
+.status-text-large.advisory { color: #ff8c00; }
+.status-text-large.unknown { color: #666; }
+
+.issues-section h3 {
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #E55722;
+    padding-bottom: 10px;
+}
+
+.issue-item {
+    background: #f8f9fa;
+    border-left: 4px solid #E55722;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 0 8px 8px 0;
+}
+
+.issue-item.active-issue {
+    background: #fff5f5;
+    border-left-color: #d13438;
+}
+
+.issue-item.recent-issue {
+    background: #f0f8f0;
+    border-left-color: #107c10;
+    opacity: 0.8;
+}
+
+.issue-item.advisory-issue {
+    background: #fff8e1;
+    border-left-color: #ffa500;
+    opacity: 0.9;
+}
+
+.issue-status.advisory {
+    background: #fff3cd; 
+    color: #856404; 
+    border: 1px solid #ffeaa7;
+}
+
+.recent-issues-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.issue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 15px;
+}
+
+.issue-title {
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+}
+
+.issue-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.issue-status.investigating { background: #fff3cd; color: #856404; }
+.issue-status.operational { background: #d1edff; color: #0c5460; }
+.issue-status.restored { background: #d4edda; color: #155724; }
+.issue-status.degradation { background: #fff3cd; color: #856404; }
+.issue-status.unknown { background: #f8f9fa; color: #666; }
+
+.issue-description {
+    color: #666;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.issue-updated {
+    font-size: 0.8em;
+    color: #999;
+}
+
+.no-issues {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+/* Large Screen Optimizations */
+@media (min-width: 1920px) {
+    .container {
+        padding: 30px;
+    }
+    
+    .services-grid {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 30px;
+    }
+    
+    .service-card {
+        padding: 30px;
+        min-height: 200px;
+    }
+    
+    .service-name {
+        font-size: 1.6em;
+    }
+    
+    .service-status {
+        font-size: 1.2em;
+    }
+    
+    .status-indicator {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1em;
+    }
+    
+    header h1 {
+        font-size: 3em;
+    }
+    
+    .company-logo {
+        height: 80px;
+    }
+}
+
+/* Ultra-wide and 4K Display Support */
+@media (min-width: 2560px) {
+    .container {
+        padding: 40px;
+    }
+    
+    .services-grid {
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 35px;
+    }
+    
+    .service-card {
+        padding: 35px;
+        min-height: 220px;
+    }
+    
+    .service-name {
+        font-size: 1.8em;
+    }
+    
+    .service-status {
+        font-size: 1.3em;
+    }
+    
+    .status-indicator {
+        width: 36px;
+        height: 36px;
+        font-size: 1.2em;
+    }
+    
+    header h1 {
+        font-size: 3.5em;
+    }
+    
+    .company-logo {
+        height: 100px;
+    }
+    
+    .issues-count {
+        font-size: 1.1em;
+        padding: 15px;
+    }
+    
+    .issues-list li {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header-content {
+        gap: 10px;
+    }
+    
+    .company-logo {
+        height: 50px;
+    }
+    
+    header h1 {
+        font-size: 2em;
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .controls-left, .controls-right {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        margin: 2% auto;
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .issue-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .service-status-large {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}
