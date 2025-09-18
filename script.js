@@ -27,22 +27,30 @@ class M365ServiceHealthDashboard {
 
     async init() {
         try {
+            console.log('=== DASHBOARD INITIALIZATION DEBUG ===');
             await this.msalInstance.initialize();
+            console.log('MSAL initialized successfully');
+            
             this.account = this.msalInstance.getActiveAccount();
+            console.log('Active account found:', !!this.account);
             
             if (!this.account) {
                 const accounts = this.msalInstance.getAllAccounts();
+                console.log('All accounts found:', accounts.length);
                 if (accounts.length > 0) {
                     this.account = accounts[0];
                     this.msalInstance.setActiveAccount(this.account);
+                    console.log('Set active account');
                 }
             }
 
             this.setupEventListeners();
             
             if (this.account) {
+                console.log('Account available, loading service health...');
                 this.loadServiceHealth();
             } else {
+                console.log('No account, showing login required...');
                 this.showLoginRequired();
             }
         } catch (error) {
@@ -162,57 +170,110 @@ class M365ServiceHealthDashboard {
     }
 
     async getAccessToken() {
+        console.log('=== GET ACCESS TOKEN DEBUG ===');
+        console.log('Account check:', !!this.account);
+        
         if (!this.account) {
+            console.error('No account found in getAccessToken');
             throw new Error('No account found. Please login first.');
         }
 
         try {
+            console.log('Attempting silent token acquisition...');
+            console.log('Login request scopes:', loginRequest.scopes);
+            console.log('Account username:', this.account.username);
+            
             const response = await this.msalInstance.acquireTokenSilent({
                 ...loginRequest,
                 account: this.account
             });
+            
+            console.log('Silent token acquisition successful');
+            console.log('Token received:', !!response.accessToken);
             return response.accessToken;
+            
         } catch (error) {
+            console.log('Silent token acquisition failed:', error.message);
+            console.log('Error type:', error.constructor.name);
+            
             if (error instanceof msal.InteractionRequiredAuthError) {
+                console.log('Interaction required, attempting popup...');
                 const response = await this.msalInstance.acquireTokenPopup(loginRequest);
+                console.log('Popup token acquisition successful');
                 return response.accessToken;
             }
+            
+            console.error('Token acquisition failed with non-interaction error:', error);
             throw error;
         }
     }
 
     async loadServiceHealth() {
+        console.log('=== LOAD SERVICE HEALTH DEBUG ===');
+        console.log('Function called at:', new Date().toISOString());
+        
         const loadingElement = document.getElementById('loading');
         const servicesGrid = document.getElementById('servicesGrid');
         const errorMessage = document.getElementById('errorMessage');
         const refreshBtn = document.getElementById('refreshBtn');
 
         try {
+            console.log('1. Setting up UI...');
             loadingElement.style.display = 'block';
             servicesGrid.innerHTML = '';
             errorMessage.style.display = 'none';
             refreshBtn.disabled = true;
+            console.log('   UI setup complete');
 
+            console.log('2. Checking account...');
+            console.log('   this.account:', this.account);
+            console.log('   Account exists:', !!this.account);
+            
             if (!this.account) {
+                console.log('   No account found, attempting login...');
                 await this.login();
+                console.log('   Login completed, returning...');
                 return;
             }
 
+            console.log('3. Getting access token...');
+            console.log('   About to call getAccessToken()');
             const accessToken = await this.getAccessToken();
+            console.log('   Access token obtained successfully:', !!accessToken);
+            console.log('   Token length:', accessToken ? accessToken.length : 'N/A');
             
             // Fetch service health data
+            console.log('4. Fetching service health data...');
+            console.log('   About to call fetchServiceHealth()');
             const healthData = await this.fetchServiceHealth(accessToken);
+            console.log('   Service health data received successfully');
+            console.log('   Services count:', healthData.services ? healthData.services.length : 'N/A');
+            console.log('   Issues count:', healthData.issues ? healthData.issues.length : 'N/A');
             
             // Display the data
+            console.log('5. Displaying service health data...');
+            console.log('   About to call displayServiceHealth()');
             this.displayServiceHealth(healthData);
+            console.log('   Display completed');
+            
+            console.log('6. Updating last updated time...');
             this.updateLastUpdatedTime();
+            console.log('   Last updated time set');
+            
+            console.log('=== LOAD SERVICE HEALTH COMPLETED SUCCESSFULLY ===');
 
         } catch (error) {
-            console.error('Error loading service health:', error);
+            console.error('=== ERROR IN LOAD SERVICE HEALTH ===');
+            console.error('Error at step:', error.step || 'unknown');
+            console.error('Error details:', error);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
             this.showError('Failed to load service health data', error.message);
         } finally {
+            console.log('7. Cleanup - hiding loading and enabling refresh button');
             loadingElement.style.display = 'none';
             refreshBtn.disabled = false;
+            console.log('   Cleanup completed');
         }
     }
 
@@ -322,17 +383,30 @@ class M365ServiceHealthDashboard {
                               issue.title?.toLowerCase().includes('advisory') ||
                               issue.impactDescription?.toLowerCase().includes('advisory');
             
-            // Only include ACTIVE advisories - not resolved ones
+            // Include advisories from the last 30 days, even if resolved
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const issueDate = new Date(issue.lastModifiedDateTime || issue.startDateTime);
+            const isRecent = issueDate >= thirtyDaysAgo;
+            
+            // Show advisory if it's currently active (not resolved and not restored)
             const isActive = !issue.isResolved && 
                            issue.status !== 'serviceRestored' && 
                            issue.status !== 'serviceOperational';
             
-            // For issues explicitly classified as advisory, trust that classification
-            // even if they have a "degradation" status - the classification takes precedence
-            return isAdvisory && isActive;
+            // For resolved issues, only show if they're very recent (last 1 day)
+            const oneDayAgo = new Date();
+            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+            const isVeryRecent = issueDate >= oneDayAgo;
+            
+            const isActiveOrRecent = isActive || (issue.isResolved && isVeryRecent);
+            
+            
+            return isAdvisory && isActiveOrRecent;
         });
 
-        // Determine display status based on actual active issues, not just API status
+        // Determine display status based on actual active issues AND service status
         if (criticalIssues.length > 0) {
             // Has active critical issues - keep original status or show as issues
             // displayStatus stays as service.status
@@ -341,8 +415,13 @@ class M365ServiceHealthDashboard {
             // No critical issues but has active advisory issues - show as advisory
             displayStatus = 'advisoryissue';
             displayClass = 'advisory';
+        } else if (service.status === 'serviceDegradation' || service.status === 'extendedRecovery') {
+            // Production solution: Use service status as authoritative source when Graph API issues are unavailable
+            // This handles cases where M365 Admin Center shows advisories but Graph API /issues endpoint doesn't
+            displayStatus = 'advisoryissue';
+            displayClass = 'advisory';
         } else {
-            // No active critical or advisory issues - show as operational regardless of API status
+            // No active critical or advisory issues and status is operational - show as operational
             displayStatus = 'serviceoperational';
             displayClass = 'healthy';
         }
@@ -361,11 +440,12 @@ class M365ServiceHealthDashboard {
             <div class="service-status ${displayClass}">
                 ${this.getStatusText(displayStatus)}
             </div>
-            ${criticalIssues.length > 0 || advisoryIssues.length > 0 ? `
+            ${criticalIssues.length > 0 || advisoryIssues.length > 0 || (service.status === 'serviceDegradation' || service.status === 'extendedRecovery') ? `
                 <div class="issues-count">
                     ${criticalIssues.length > 0 ? `${criticalIssues.length} active issue${criticalIssues.length !== 1 ? 's' : ''}` : ''}
                     ${criticalIssues.length > 0 && advisoryIssues.length > 0 ? ', ' : ''}
                     ${advisoryIssues.length > 0 ? `${advisoryIssues.length} advisory${advisoryIssues.length !== 1 ? ' items' : ' item'}` : ''}
+                    ${(criticalIssues.length === 0 && advisoryIssues.length === 0 && (service.status === 'serviceDegradation' || service.status === 'extendedRecovery')) ? 'Service experiencing issues' : ''}
                 </div>
                 <ul class="issues-list">
                     ${criticalIssues.slice(0, 2).map(issue => `
@@ -375,6 +455,7 @@ class M365ServiceHealthDashboard {
                         <li>${issue.title}</li>
                     `).join('')}
                     ${(criticalIssues.length + advisoryIssues.length) > 2 ? `<li>... and ${(criticalIssues.length + advisoryIssues.length) - 2} more</li>` : ''}
+                    ${(criticalIssues.length === 0 && advisoryIssues.length === 0 && (service.status === 'serviceDegradation' || service.status === 'extendedRecovery')) ? '<li>Check M365 Admin Center for details</li>' : ''}
                 </ul>
             ` : ''}
             <div class="click-hint">Click to view details</div>
@@ -425,25 +506,28 @@ class M365ServiceHealthDashboard {
         // Priority order (lower number = higher priority = shown first):
         // 1. Service Interruption (critical)
         // 2. Service Degradation 
-        // 3. Operational but with critical issues
-        // 4. Advisory Issues only
-        // 5. Operational with only advisory issues  
-        // 6. Healthy/Operational (no issues)
-        // 7. Unknown status
+        // 3. Extended Recovery
+        // 4. Operational but with critical issues
+        // 5. Advisory Issues only
+        // 6. Operational with only advisory issues  
+        // 7. Healthy/Operational (no issues)
+        // 8. Unknown status
 
         switch (status?.toLowerCase()) {
             case 'serviceinterruption':
                 return 1;
             case 'servicedegradation':
                 return 2;
+            case 'extendedrecovery':
+                return 3;
             case 'serviceoperational':
-                if (criticalIssues.length > 0) return 3;
-                if (advisoryIssues.length > 0) return 5;
-                return 6; // No issues
+                if (criticalIssues.length > 0) return 4;
+                if (advisoryIssues.length > 0) return 6;
+                return 7; // No issues
             case 'advisoryissue':
-                return 4;
+                return 5;
             default:
-                return 7; // Unknown status last
+                return 8; // Unknown status last
         }
     }
 
@@ -456,6 +540,8 @@ class M365ServiceHealthDashboard {
             case 'serviceinterruption':
                 return 'issues';
             case 'advisoryissue':
+                return 'advisory';
+            case 'extendedrecovery':
                 return 'advisory';
             default:
                 return 'unknown';
@@ -472,6 +558,8 @@ class M365ServiceHealthDashboard {
                 return '!';
             case 'advisoryissue':
                 return '⚠';
+            case 'extendedrecovery':
+                return '⚠';
             default:
                 return '?';
         }
@@ -487,6 +575,8 @@ class M365ServiceHealthDashboard {
                 return 'Service Interruption';
             case 'advisoryissue':
                 return 'Service Advisory';
+            case 'extendedrecovery':
+                return 'Extended Recovery';
             default:
                 return 'Status Unknown';
         }
