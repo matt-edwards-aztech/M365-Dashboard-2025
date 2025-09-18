@@ -22,6 +22,29 @@ class M365ServiceHealthDashboard {
         this.msalInstance = new msal.PublicClientApplication(msalConfig);
         this.account = null;
         this.refreshInterval = null;
+        
+        // Configuration for known issues that exist in M365 Admin Center but not in Graph API
+        // This is a maintenance workaround for API data sync issues
+        this.knownAdvisories = {
+            'SharePoint Online': [
+                {
+                    id: 'SP1030180',
+                    title: 'Users may see a new "Content Freshness" template option when creating pages in SharePoint Online',
+                    classification: 'advisory',
+                    status: 'investigating'
+                }
+            ]
+            // Add more services and their known issues here as needed
+            // 'Microsoft Teams': [
+            //     {
+            //         id: 'TM123456',
+            //         title: 'Example Teams advisory',
+            //         classification: 'advisory',
+            //         status: 'investigating'
+            //     }
+            // ]
+        };
+        
         this.init();
     }
 
@@ -360,13 +383,17 @@ class M365ServiceHealthDashboard {
     createServiceCard(service, issues) {
         const card = document.createElement('div');
         
+        // Merge API issues with known advisories from configuration
+        const knownIssues = this.knownAdvisories[service.service] || [];
+        const allIssues = [...issues, ...knownIssues];
+        
         // Determine if we need to override status for cards with operational status but active issues
         let displayStatus = service.status;
         let displayClass = this.getStatusClass(service.status);
         
 
         // Separate different types of issues - Let's be more specific about what constitutes critical vs advisory
-        const criticalIssues = issues.filter(issue => {
+        const criticalIssues = allIssues.filter(issue => {
             const hasIncidentStatus = issue.status === 'investigating' || 
                                     issue.status === 'serviceDegradation' ||
                                     issue.status === 'serviceInterruption';
@@ -377,7 +404,7 @@ class M365ServiceHealthDashboard {
             return hasIncidentStatus && !isExplicitlyAdvisory;
         });
 
-        const advisoryIssues = issues.filter(issue => {
+        const advisoryIssues = allIssues.filter(issue => {
             // Check if it's explicitly marked as advisory (case insensitive)
             const isAdvisory = issue.classification?.toLowerCase() === 'advisory' || 
                               issue.title?.toLowerCase().includes('advisory') ||
@@ -387,13 +414,17 @@ class M365ServiceHealthDashboard {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             
-            const issueDate = new Date(issue.lastModifiedDateTime || issue.startDateTime);
+            // Handle known issues that might not have date fields
+            const issueDate = issue.lastModifiedDateTime || issue.startDateTime ? 
+                new Date(issue.lastModifiedDateTime || issue.startDateTime) : new Date();
             const isRecent = issueDate >= thirtyDaysAgo;
             
             // Show advisory if it's currently active (not resolved and not restored)
-            const isActive = !issue.isResolved && 
+            // Known issues from configuration are considered active by default
+            const isActive = (issue.isResolved === undefined) ? true : // Known issues default to active
+                           (!issue.isResolved && 
                            issue.status !== 'serviceRestored' && 
-                           issue.status !== 'serviceOperational';
+                           issue.status !== 'serviceOperational');
             
             // For resolved issues, only show if they're very recent (last 1 day)
             const oneDayAgo = new Date();
@@ -468,7 +499,7 @@ class M365ServiceHealthDashboard {
             console.log('Card clicked for service:', service.service);
             
             try {
-                this.showServiceModal(service, issues);
+                this.showServiceModal(service, allIssues);
             } catch (error) {
                 console.error('Error showing modal:', error);
             }
